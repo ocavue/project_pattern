@@ -13,5 +13,8 @@
   "devDependencies": {
     "parcel-bundler": "^1.12.3",
     "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "konva": "^3.2.5"
   }
 }
