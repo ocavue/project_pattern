@@ -1,0 +1,16 @@
+{
+  "name": "project_pattern",
+  "version": "0.0.1",
+  "main": "index.html",
+  "repository": "git@github.com:ocavue/project_pattern.git",
+  "author": "ocavue <ocavue@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  }
+}
