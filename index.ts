@@ -83,7 +83,6 @@ function main() {
             removeTransformers(stage)
             createTransformer(shape, layer)
             layer.draw()
-            refreshBackground(stage)
         })
     }
     stage.on('click tap', e => {
@@ -93,6 +92,9 @@ function main() {
             layer.draw();
             return;
         }
+    })
+    stage.on('mouseup', e => {
+        refreshBackground(stage)
     })
 
 }
