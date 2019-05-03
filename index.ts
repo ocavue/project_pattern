@@ -8,8 +8,8 @@ function removeTransformers(stage: Konva.Stage) {
 function refreshBackground(stage: Konva.Stage) {
     removeTransformers(stage)  // remove all transformers from stage but don't redraw layout
     let dataURL = stage.toDataURL({});
-    console.log('dataURL:', dataURL)
-    document.getElementById('background').style.backgroundImage = `url(${dataURL})`
+    console.debug('dataURL:', dataURL)
+    document.body.style.backgroundImage = `url(${dataURL})`
 }
 
 function makeShape(): Konva.Shape {
