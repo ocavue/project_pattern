@@ -1,15 +1,37 @@
 import Konva from 'konva'
 
-function removeTransformers(stage: Konva.Stage) {
+function findTransformers(stage: Konva.Stage) {
     let finded: any = stage.find('Transformer')
-    finded.destroy();
+    return finded
+}
+
+function removeTransformers(stage: Konva.Stage) {
+    console.log('removeTransformers')
+    findTransformers(stage).destroy()
+}
+
+function createTransformer(shape: Konva.Shape, layer: Konva.Layer) {
+    console.log('createTransformer shape:', shape)
+
+    var t = new Konva.Transformer({
+        centeredScaling: true,
+        // rotateAnchorOffset: 20,
+        // keepRatio: true,
+        enabledAnchors: ['bottom-left'],
+    });
+
+    layer.add(t);
+    t.attachTo(shape);
 }
 
 function refreshBackground(stage: Konva.Stage) {
-    removeTransformers(stage)  // remove all transformers from stage but don't redraw layout
+    console.log('refreshBackground')
+    let ts = findTransformers(stage)
+    ts.hide()
     let dataURL = stage.toDataURL({});
     console.debug('dataURL:', dataURL)
     document.body.style.backgroundImage = `url(${dataURL})`
+    ts.show()
 }
 
 function makeShape(): Konva.Shape {
@@ -28,10 +50,10 @@ function makeShape(): Konva.Shape {
              L -19.021 6.180
              L -23.511 32.361
              L 0.000 20.000`,
-        fill: 'green',
+        fill: 'rgba(0,0,255,0.5)',
         scale: {
-            x: 2,
-            y: 2,
+            x: 1,
+            y: 1,
         },
         draggable: true,
     });
@@ -46,37 +68,33 @@ function main() {
 
     let layer = new Konva.Layer();
 
-    layer.add(makeShape());
-    layer.add(makeShape());
+    // let shape = makeShape()
+    // layer.add(shape)
+    let shapes = [makeShape(), makeShape(), makeShape()]
+    for (let shape of shapes) {
+        layer.add(shape)
+    }
     stage.add(layer);
     layer.draw();
+    refreshBackground(stage)
 
-    stage.on('click tap mouseup', function (e) {
+    for (let shape of shapes) {
+        shape.on('click tap mouseup', e => {
+            removeTransformers(stage)
+            createTransformer(shape, layer)
+            layer.draw()
+            refreshBackground(stage)
+        })
+    }
+    stage.on('click tap', e => {
         // if click on empty area - remove all transformers
         if (e.target === stage) {
             removeTransformers(stage)
             layer.draw();
             return;
         }
+    })
 
-        // remove old transformers
-        // TODO: we can skip it if current rect is already selected
-        removeTransformers(stage)
-
-        // create new transformer
-        var t = new Konva.Transformer({
-            centeredScaling: true,
-            // rotateAnchorOffset: 20,
-            // keepRatio: true,
-            enabledAnchors: ['bottom-left'],
-        });
-
-        layer.add(t);
-        t.attachTo(e.target);
-        layer.draw();
-
-        refreshBackground(stage)
-    });
 }
 
 main()
