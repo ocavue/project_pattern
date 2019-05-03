@@ -34,10 +34,12 @@ function refreshBackground(stage: Konva.Stage) {
     ts.show()
 }
 
+let shapeIndex = -1
 function makeShape(): Konva.Shape {
+    shapeIndex += 1
     return new Konva.Path({
-        x: Math.random() * 200 + 100,
-        y: Math.random() * 200 + 100,
+        y: 50 + 80 * Math.floor(shapeIndex % 5),
+        x: 50 + 80 * Math.floor(shapeIndex / 5),
         data:
             `M 0.000 20.000
              L 23.511 32.361
@@ -50,7 +52,7 @@ function makeShape(): Konva.Shape {
              L -19.021 6.180
              L -23.511 32.361
              L 0.000 20.000`,
-        fill: 'rgba(0,0,255,0.5)',
+        fill: 'lightsteelblue',
         scale: {
             x: 1,
             y: 1,
@@ -68,9 +70,10 @@ function main() {
 
     let layer = new Konva.Layer();
 
-    // let shape = makeShape()
-    // layer.add(shape)
-    let shapes = [makeShape(), makeShape(), makeShape()]
+    let shapes: Konva.Shape[] = []
+    for (let i = 0; i < 20; i++) {
+        shapes.push(makeShape())
+    }
     for (let shape of shapes) {
         layer.add(shape)
     }
