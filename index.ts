@@ -1,19 +1,21 @@
 import Konva from 'konva'
 
+function removeTransformers(stage: Konva.Stage) {
+    let finded: any = stage.find('Transformer')
+    finded.destroy();
+}
 
-function main() {
-    let stage = new Konva.Stage({
-        container: 'container',
-        width: 512,
-        height: 512
-    });
+function refreshBackground(stage: Konva.Stage) {
+    removeTransformers(stage)  // remove all transformers from stage but don't redraw layout
+    let dataURL = stage.toDataURL({});
+    console.log('dataURL:', dataURL)
+    document.getElementById('background').style.backgroundImage = `url(${dataURL})`
+}
 
-    let layer = new Konva.Layer();
-
-    let shape: Konva.Shape
-    shape = new Konva.Path({
-        x: 100,
-        y: 100,
+function makeShape(): Konva.Shape {
+    return new Konva.Path({
+        x: Math.random() * 200 + 100,
+        y: Math.random() * 200 + 100,
         data:
             `M 0.000 20.000
              L 23.511 32.361
@@ -33,24 +35,33 @@ function main() {
         },
         draggable: true,
     });
+}
 
-    layer.add(shape);
+function main() {
+    let stage = new Konva.Stage({
+        container: 'container',
+        width: 512,
+        height: 512
+    });
+
+    let layer = new Konva.Layer();
+
+    layer.add(makeShape());
+    layer.add(makeShape());
     stage.add(layer);
     layer.draw();
 
     stage.on('click tap mouseup', function (e) {
         // if click on empty area - remove all transformers
         if (e.target === stage) {
-            let finded: any = stage.find('Transformer')
-            finded.destroy();
+            removeTransformers(stage)
             layer.draw();
             return;
         }
 
         // remove old transformers
         // TODO: we can skip it if current rect is already selected
-        let finded: any = stage.find('Transformer')
-        finded.destroy();
+        removeTransformers(stage)
 
         // create new transformer
         var t = new Konva.Transformer({
@@ -59,9 +70,12 @@ function main() {
             // keepRatio: true,
             enabledAnchors: ['bottom-left'],
         });
+
         layer.add(t);
         t.attachTo(e.target);
         layer.draw();
+
+        refreshBackground(stage)
     });
 }
 
