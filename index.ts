@@ -4,8 +4,8 @@ import Konva from 'konva'
 function main() {
     let stage = new Konva.Stage({
         container: 'container',
-        width: window.innerWidth,
-        height: window.innerHeight
+        width: 512,
+        height: 512
     });
 
     let layer = new Konva.Layer();
