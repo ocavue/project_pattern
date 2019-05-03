@@ -30,12 +30,39 @@ function main() {
         scale: {
             x: 2,
             y: 2,
-        }
+        },
+        draggable: true,
     });
-    shape.draggable(true)
 
     layer.add(shape);
     stage.add(layer);
+    layer.draw();
+
+    stage.on('click tap mouseup', function (e) {
+        // if click on empty area - remove all transformers
+        if (e.target === stage) {
+            let finded: any = stage.find('Transformer')
+            finded.destroy();
+            layer.draw();
+            return;
+        }
+
+        // remove old transformers
+        // TODO: we can skip it if current rect is already selected
+        let finded: any = stage.find('Transformer')
+        finded.destroy();
+
+        // create new transformer
+        var t = new Konva.Transformer({
+            centeredScaling: true,
+            // rotateAnchorOffset: 20,
+            // keepRatio: true,
+            enabledAnchors: ['bottom-left'],
+        });
+        layer.add(t);
+        t.attachTo(e.target);
+        layer.draw();
+    });
 }
 
 main()
