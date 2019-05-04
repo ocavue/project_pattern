@@ -1,5 +1,6 @@
 import Konva from 'konva'
 import * as _ from 'lodash'
+import FontFaceOnload from 'fontfaceonload'
 
 const CHARS = [
     '\uf000',
@@ -1022,15 +1023,7 @@ async function main() {
         }
     ))
 
-    // document.fonts.load('FontAwesome').then(() => console.log('aaa'));
-
-
-    console.log('ccc')
-    layer.draw()
-
     stage.add(layer);
-    layer.draw();
-    refreshBackground(stage, layer)
 
     for (let shape of shapes) {
         shape.on('click tap mouseup', e => {
@@ -1050,6 +1043,19 @@ async function main() {
     stage.on('mouseup', e => {
         refreshBackground(stage, layer)
     })
+
+    // Hide layout at fist, so that the brower will not show those squares since font-awesome hasn't been loaded yet.
+    layer.hide()
+
+    FontFaceOnload("FontAwesome", {
+        success: () => {
+            layer.show()
+            layer.draw()
+            refreshBackground(stage, layer)
+        },
+        error: () => alert('Failed to load FontAwesome'),
+        timeout: 120 * 1000 // in ms. Optional, default is 10 seconds
+    });
 }
 
 main()
