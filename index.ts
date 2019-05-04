@@ -941,121 +941,141 @@ const CHARS = [
     '\uf83e',
 ]
 
-function findTransformers(stage: Konva.Stage) {
-    let finded: any = stage.find('Transformer')
-    return finded
-}
+class Canvas {
+    width: number
+    height: number
+    stage: Konva.Stage
+    layer: Konva.Layer
 
-function removeTransformers(stage: Konva.Stage) {
-    console.log('removeTransformers')
-    findTransformers(stage).destroy()
-}
+    constructor(width: number, height: number) {
+        this.width = width;
+        this.height = height;
 
-function createTransformer(shape: Konva.Shape, layer: Konva.Layer) {
-    console.log('createTransformer shape:', shape)
-
-    var t = new Konva.Transformer({
-        centeredScaling: true,
-        // rotateAnchorOffset: 20,
-        // keepRatio: true,
-        enabledAnchors: ['bottom-left'],
-    });
-
-    layer.add(t);
-    t.attachTo(shape);
-}
-
-function refreshBackground(stage: Konva.Stage, layer: Konva.Layer) {
-    console.log('refreshBackground')
-    let ts = findTransformers(stage)
-    ts.hide()
-    let dataURL = layer.toDataURL({});
-    console.debug('dataURL:', dataURL)
-    document.body.style.backgroundImage = `url(${dataURL})`
-    ts.show()
-}
-
-function makeShape(index: number, layer: Konva.Layer, stage: Konva.Stage): Promise<Konva.Shape> {
-    return new Promise((resolve, reject) => {
-        // let img = new Image()
-        // img.src = svgs[index]
-        // img.onerror = reject
-        // img.onload = function () {
-        let shape: Konva.Shape
-        shape = new Konva.Text({
-            x: 50 + 80 * Math.floor(index % 5),
-            y: 50 + 80 * Math.floor(index / 5),
-            // text: "\uf641",
-            text: CHARS[index],
-            fontFamily: "FontAwesome",
-            fontSize: 60,
-            width: 60,
-            height: 60,
-            draggable: true,
-            fill: 'green',
-            // stroke: 'red',
+        this.stage = new Konva.Stage({
+            container: 'container',
+            width: 512,
+            height: 512
         });
-        console.debug('shape created')
-        resolve(shape)
-        // }
-    })
+
+        this.layer = new Konva.Layer();
+    }
+
+    async draw() {
+        let stage = this.stage
+        let layer = this.layer
+
+        let shapes: Konva.Shape[] = await Promise.all(
+            _.range(25).map((i) => this.makeShape(i))
+        )
+        // add the shape to the layer
+        shapes.map(shape => layer.add(shape))
+        shapes.map(shape => shape.on(
+            'click tap mouseup', e => {
+                this.removeTransformers()
+                this.createTransformer(shape)
+                layer.draw()
+            }
+        ))
+
+        stage.add(layer);
+
+        for (let shape of shapes) {
+            shape.on('click tap mouseup', e => {
+                this.removeTransformers()
+                this.createTransformer(shape)
+                layer.draw()
+            })
+        }
+        stage.on('click tap', e => {
+            // if click on empty area - remove all transformers
+            if (e.target === stage) {
+                this.removeTransformers()
+                layer.draw();
+                return;
+            }
+        })
+        stage.on('mouseup', e => {
+            this.refreshBackground()
+        })
+
+        // Hide layout at fist, so that the brower will not show those squares since font-awesome hasn't been loaded yet.
+        layer.hide()
+
+        FontFaceOnload("FontAwesome", {
+            success: () => {
+                layer.show()
+                layer.draw()
+                this.refreshBackground()
+            },
+            error: () => alert('Failed to load FontAwesome'),
+            timeout: 120 * 1000 // in ms. Optional, default is 10 seconds
+        });
+    }
+
+    makeShape(index: number): Promise<Konva.Shape> {
+        return new Promise((resolve, reject) => {
+            // let img = new Image()
+            // img.src = svgs[index]
+            // img.onerror = reject
+            // img.onload = function () {
+            let shape: Konva.Shape
+            shape = new Konva.Text({
+                x: 50 + 80 * Math.floor(index % 5),
+                y: 50 + 80 * Math.floor(index / 5),
+                // text: "\uf641",
+                text: CHARS[index],
+                fontFamily: "FontAwesome",
+                fontSize: 60,
+                width: 60,
+                height: 60,
+                draggable: true,
+                fill: 'green',
+                // stroke: 'red',
+            });
+            console.debug('shape created')
+            resolve(shape)
+            // }
+        })
+    }
+
+    findTransformers() {
+        let finded: any = this.stage.find('Transformer')
+        return finded
+    }
+
+    createTransformer(shape: Konva.Shape) {
+        console.log('createTransformer shape:', shape)
+
+        var t = new Konva.Transformer({
+            centeredScaling: true,
+            // rotateAnchorOffset: 20,
+            // keepRatio: true,
+            enabledAnchors: ['bottom-left'],
+        });
+
+        this.layer.add(t);
+        t.attachTo(shape);
+    }
+
+    removeTransformers() {
+        console.log('removeTransformers')
+        this.findTransformers().destroy()
+    }
+
+    refreshBackground() {
+        console.log('refreshBackground')
+        let ts = this.findTransformers()
+        ts.hide()
+        let dataURL = this.layer.toDataURL({});
+        console.debug('dataURL:', dataURL)
+        document.body.style.backgroundImage = `url(${dataURL})`
+        ts.show()
+    }
 }
 
 async function main() {
-    let stage = new Konva.Stage({
-        container: 'container',
-        width: 512,
-        height: 512
-    });
-
-    let layer = new Konva.Layer();
-
-    let shapes: Konva.Shape[] = await Promise.all(
-        _.range(25).map((i) => makeShape(i, layer, stage))
-    )
-    // add the shape to the layer
-    shapes.map(shape => layer.add(shape))
-    shapes.map(shape => shape.on(
-        'click tap mouseup', e => {
-            removeTransformers(stage)
-            createTransformer(shape, layer)
-            layer.draw()
-        }
-    ))
-
-    stage.add(layer);
-
-    for (let shape of shapes) {
-        shape.on('click tap mouseup', e => {
-            removeTransformers(stage)
-            createTransformer(shape, layer)
-            layer.draw()
-        })
-    }
-    stage.on('click tap', e => {
-        // if click on empty area - remove all transformers
-        if (e.target === stage) {
-            removeTransformers(stage)
-            layer.draw();
-            return;
-        }
-    })
-    stage.on('mouseup', e => {
-        refreshBackground(stage, layer)
-    })
-
-    // Hide layout at fist, so that the brower will not show those squares since font-awesome hasn't been loaded yet.
-    layer.hide()
-
-    FontFaceOnload("FontAwesome", {
-        success: () => {
-            layer.show()
-            layer.draw()
-            refreshBackground(stage, layer)
-        },
-        error: () => alert('Failed to load FontAwesome'),
-        timeout: 120 * 1000 // in ms. Optional, default is 10 seconds
-    });
+    let c = new Canvas(512, 512)
+    c.draw()
 }
 
 main()
