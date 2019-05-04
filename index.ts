@@ -953,8 +953,8 @@ class Canvas {
 
         this.stage = new Konva.Stage({
             container: 'container',
-            width: 512,
-            height: 512
+            width: width,
+            height: height,
         });
 
         this.layer = new Konva.Layer();
