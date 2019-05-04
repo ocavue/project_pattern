@@ -18,6 +18,7 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
+    "fontfaceonload": "^1.0.2",
     "konva": "^3.2.5"
   }
 }
