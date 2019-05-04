@@ -982,14 +982,14 @@ function makeShape(index: number, layer: Konva.Layer, stage: Konva.Stage): Promi
         // img.onload = function () {
         let shape: Konva.Shape
         shape = new Konva.Text({
-            x: 50 + 40 * Math.floor(index % 10),
-            y: 50 + 40 * Math.floor(index / 10),
+            x: 50 + 80 * Math.floor(index % 5),
+            y: 50 + 80 * Math.floor(index / 5),
             // text: "\uf641",
             text: CHARS[index],
             fontFamily: "FontAwesome",
-            fontSize: 30,
-            width: 30,
-            height: 30,
+            fontSize: 60,
+            width: 60,
+            height: 60,
             draggable: true,
             fill: 'green',
             // stroke: 'red',
@@ -1010,7 +1010,7 @@ async function main() {
     let layer = new Konva.Layer();
 
     let shapes: Konva.Shape[] = await Promise.all(
-        _.range(100).map((i) => makeShape(i, layer, stage))
+        _.range(25).map((i) => makeShape(i, layer, stage))
     )
     // add the shape to the layer
     shapes.map(shape => layer.add(shape))
@@ -1050,7 +1050,6 @@ async function main() {
     stage.on('mouseup', e => {
         refreshBackground(stage, layer)
     })
-
 }
 
 main()
