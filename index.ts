@@ -1075,8 +1075,8 @@ class Canvas {
     makeShape(index: number): Konva.Shape {
         let shape: Konva.Shape
         shape = new Konva.Text({
-            x: 50 + 80 * Math.floor(index % 5),
-            y: 50 + 80 * Math.floor(index / 5),
+            x: 10 + 102 * Math.floor(index % 5),
+            y: 10 + 102 * Math.floor(index / 5),
             // text: "\uf641",
             text: CHARS[index],
             fontFamily: "FontAwesome",
@@ -1084,7 +1084,7 @@ class Canvas {
             width: 60,
             height: 60,
             draggable: true,
-            fill: 'green',
+            fill: 'white',
             // stroke: 'red',
         })
         shape.id(String(Date.now() +index+ Math.random()))
