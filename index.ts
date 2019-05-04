@@ -946,6 +946,7 @@ class Canvas {
     height: number
     stage: Konva.Stage
     layer: Konva.Layer
+    clones: object
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -958,15 +959,29 @@ class Canvas {
         });
 
         this.layer = new Konva.Layer();
+        this.clones = {}
+    }
+
+    loadFontAwesome(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FontFaceOnload("FontAwesome", {
+                success: () => {
+                    resolve()
+                },
+                error: () => {
+                    alert('Failed to load FontAwesome')
+                },
+                timeout: 120 * 1000 // in ms. Optional, default is 10 seconds
+            })
+        })
     }
 
     async draw() {
         let stage = this.stage
         let layer = this.layer
 
-        let shapes: Konva.Shape[] = await Promise.all(
-            _.range(25).map((i) => this.makeShape(i))
-        )
+        let shapes: Konva.Shape[] = _.range(25).map((i) => this.makeShape(i))
+        await this.loadFontAwesome()
         // add the shape to the layer
         shapes.map(shape => layer.add(shape))
         shapes.map(shape => shape.on(
@@ -982,6 +997,7 @@ class Canvas {
         for (let shape of shapes) {
             shape.on('click tap mouseup', e => {
                 this.removeTransformers()
+                this.drawClones(shape)
                 this.createTransformer(shape)
                 layer.draw()
             })
@@ -999,43 +1015,80 @@ class Canvas {
         })
 
         // Hide layout at fist, so that the brower will not show those squares since font-awesome hasn't been loaded yet.
-        layer.hide()
 
-        FontFaceOnload("FontAwesome", {
-            success: () => {
-                layer.show()
-                layer.draw()
-                this.refreshBackground()
-            },
-            error: () => alert('Failed to load FontAwesome'),
-            timeout: 120 * 1000 // in ms. Optional, default is 10 seconds
-        });
+        this.refreshBackground()
+        layer.draw()
     }
 
-    makeShape(index: number): Promise<Konva.Shape> {
-        return new Promise((resolve, reject) => {
-            // let img = new Image()
-            // img.src = svgs[index]
-            // img.onerror = reject
-            // img.onload = function () {
-            let shape: Konva.Shape
-            shape = new Konva.Text({
-                x: 50 + 80 * Math.floor(index % 5),
-                y: 50 + 80 * Math.floor(index / 5),
-                // text: "\uf641",
-                text: CHARS[index],
-                fontFamily: "FontAwesome",
-                fontSize: 60,
-                width: 60,
-                height: 60,
-                draggable: true,
-                fill: 'green',
-                // stroke: 'red',
-            });
-            console.debug('shape created')
-            resolve(shape)
-            // }
+    drawClones(shape: Konva.Shape): void {
+        let size = this.getSize(shape)
+        for (let clone of this.clones[shape.id()] || []) {
+            clone.destroy()
+        }
+        this.clones[shape.id()] = []
+
+        let bewteen = (a: number, x: number, b: number) => a < x && x < b
+
+        for (let dx of [-this.width, 0, +this.width]) {
+            for (let dy of [-this.height, 0, +this.height]) {
+                if (dx === 0 && dy === 0) continue
+                let y1 = size.top + dy
+                let x1 = size.left + dx
+                let x2 = size.right + dx
+                let y2 = size.bottom + dy
+
+
+                let points = []
+                for (let x of [x1, x2]) {
+                    for (let y of [y1, y2]) {
+                        points.push([x, y])
+                    }
+                }
+
+                for (let [x, y] of points) {
+                    if (bewteen(0, x, this.width) && bewteen(0, y, this.height)) {
+                        let clone = shape.clone({ x: x1, y: y1, draggable: false })
+                        this.clones[shape.id()].push(clone)
+                        this.layer.add(clone)
+                        this.layer.draw()
+                        break
+                    }
+                }
+            }
+        }
+
+        let emptyKeys = Object.keys(this.clones).filter((key) => !this.clones[key])
+        for (let key of emptyKeys) {
+            delete this.clones[key]
+        }
+        console.log('clones:', this.clones)
+    }
+
+    getSize(shape: Konva.Shape): { left: number, top: number, right: number, bottom: number } {
+        let position = shape.position()
+        let [left, top] = [position.x, position.y]
+        let right = left + shape.size().width * shape.scale().x
+        let bottom = top + shape.size().height * shape.scale().y
+        return { left, top, right, bottom, }
+    }
+
+    makeShape(index: number): Konva.Shape {
+        let shape: Konva.Shape
+        shape = new Konva.Text({
+            x: 50 + 80 * Math.floor(index % 5),
+            y: 50 + 80 * Math.floor(index / 5),
+            // text: "\uf641",
+            text: CHARS[index],
+            fontFamily: "FontAwesome",
+            fontSize: 60,
+            width: 60,
+            height: 60,
+            draggable: true,
+            fill: 'green',
+            // stroke: 'red',
         })
+        shape.id(String(Date.now() +index+ Math.random()))
+        return shape
     }
 
     findTransformers() {
