@@ -35,11 +35,49 @@
 
             background-color: steelblue;
         }
+
+        #sidebar {
+            background: white;
+
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            position: absolute;
+            width: 400px;
+            top: 32px;
+            right: 32px;
+            bottom: 32px;
+            overflow-y: scroll;
+
+            padding-top: 32px;
+            padding-bottom: 32px;
+            border-radius: 8px;
+
+            font-family: "FontAwesome";
+            font-size: 32px;
+
+            border-style: solid;
+            border-width: 1px;
+            border-color: black;
+        }
+
+        #sidebar span {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            margin-left: 16px;
+            margin-right: 16px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
     <div id="container"></div>
+    <div id="sidebar"></div>
     <script src="./index.ts"></script>
 </body>
 

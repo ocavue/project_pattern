@@ -191,9 +191,20 @@ class Canvas {
     }
 }
 
+function setupSidebar() {
+    for (let char of CHARS) {
+        let icon = document.createElement('span');
+        icon.innerHTML = char
+        icon.onclick = () => alert('clicked')
+        document.getElementById('sidebar').appendChild(icon)
+    }
+}
+
 async function main() {
     let c = new Canvas(512, 512)
     c.draw()
+
+    setupSidebar()
 }
 
 main()
