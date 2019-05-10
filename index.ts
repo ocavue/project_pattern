@@ -167,7 +167,7 @@ class Canvas {
 
         var t = new Konva.Transformer({
             centeredScaling: true,
-            // rotateAnchorOffset: 20,
+            rotateAnchorOffset: 0,
             // keepRatio: true,
             enabledAnchors: ['bottom-left'],
         });
