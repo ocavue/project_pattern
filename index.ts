@@ -4,6 +4,10 @@ import FontFaceOnload from 'fontfaceonload'
 import { Draggable } from '@shopify/draggable'
 import CHARS from './icons'
 
+const SIZE = 256
+const MARGIN_X = SIZE * 2
+const MARGIN_Y = SIZE * 1
+
 class Canvas {
     width: number
     height: number
@@ -43,7 +47,7 @@ class Canvas {
         let stage = this.stage
         let layer = this.layer
 
-        let shapes: Konva.Shape[] = _.range(25).map((i) => this.makeShape(i))
+        let shapes: Konva.Shape[] = _.range(16).map((i) => this.makeShape(i))
         await this.loadFontAwesome()
         // add the shape to the layer
         shapes.map(shape => layer.add(shape))
@@ -138,16 +142,18 @@ class Canvas {
     makeShape(index: number): Konva.Shape {
         let shape: Konva.Shape
         shape = new Konva.Text({
-            x: 10 + 102 * Math.floor(index % 5),
-            y: 10 + 102 * Math.floor(index / 5),
+            x: 10 + 64 * Math.floor(index % 4),
+            y: 10 + 64 * Math.floor(index / 4),
             // text: "\uf641",
             text: CHARS[index],
             fontFamily: "FontAwesome",
-            fontSize: 60,
-            width: 60,
-            height: 60,
+            fontSize: 32,
+            width: 32,
+            height: 32,
             draggable: true,
             fill: 'white',
+            align: 'center',
+            verticalAlign: 'center',
             // stroke: 'red',
         })
         shape.id(String(Date.now() + index + Math.random()))
@@ -209,23 +215,30 @@ function setupSidebar(canvas: Canvas) {
         y = event.data.sensorEvent.clientY
     })
     icons.on('drag:stop', (event) => {
-        if (512 < x && x < 1024 && 512 < y && y < 1024) {
-            console.log('IN')
+        if (
+            MARGIN_X < x && x < MARGIN_X + SIZE &&
+            MARGIN_Y < y && y < MARGIN_Y + SIZE
+        ) {
             let shape = canvas.makeShape(0)  // TODO
-            shape.setAttr('x', x - 512)
-            shape.setAttr('y', y - 512)
+            shape.setAttr('x', x - MARGIN_X)
+            shape.setAttr('y', y - MARGIN_Y)
             canvas.layer.add(shape)
             canvas.layer.draw()
             canvas.refreshBackground()
-        } else {
-            console.log('OUT')
         }
         [x, y] = [0, 0]
     });
 }
 
+function setupContainer() {
+    document.getElementById('container').style.marginLeft = `${MARGIN_X}px`
+    document.getElementById('container').style.marginTop = `${MARGIN_Y}px`
+}
+
 async function main() {
-    let c = new Canvas(512, 512)
+    setupContainer()
+
+    let c = new Canvas(SIZE, SIZE)
     c.draw()
 
     setupSidebar(c)
