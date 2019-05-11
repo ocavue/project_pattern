@@ -14,6 +14,7 @@ class Canvas {
     stage: Konva.Stage
     layer: Konva.Layer
     clones: object
+    shapes: Array<Konva.Shape>
     selected: Konva.Shape | null
 
     constructor(width: number, height: number) {
@@ -28,6 +29,7 @@ class Canvas {
 
         this.layer = new Konva.Layer();
         this.clones = {}
+        this.shapes = []
         this.selected = null
     }
 
@@ -150,7 +152,7 @@ class Canvas {
             verticalAlign: 'center',
             rotation: rotation ? rotation : 0,
         })
-        shape.id(String(Date.now() + Math.random()) + char)
+        shape.id(char + String(Date.now() + Math.random()))
         shape.on(
             'click tap mouseup', e => {
                 this.removeTransformers()
@@ -159,6 +161,7 @@ class Canvas {
                 this.layer.draw()
             }
         )
+        this.shapes.push(shape)
         this.layer.add(shape)
     }
 
@@ -168,6 +171,10 @@ class Canvas {
         this.removeTransformers()
         this.layer.draw()
         this.refreshBackground()
+        let index = this.shapes.indexOf(shape);
+        if (index > -1) {
+            this.shapes.splice(index, 1);
+        }
     }
 
     insertDefaultIcons() {
@@ -211,6 +218,16 @@ class Canvas {
         ts.hide()
         let dataURL = this.layer.toDataURL({});
         console.debug('dataURL:', dataURL)
+        console.log(this.shapes.map((shape) => {
+            return {
+                x: shape.x(),
+                y: shape.y(),
+                width: shape.width(),
+                height: shape.height(),
+                rotation: shape.rotation(),
+                char: shape.id().slice(0, 1)
+            }
+        }))
         document.body.style.backgroundImage = `url(${dataURL})`
         ts.show()
     }
