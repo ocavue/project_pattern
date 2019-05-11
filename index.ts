@@ -139,13 +139,12 @@ class Canvas {
         return { left, top, right, bottom, }
     }
 
-    makeShape(index: number): Konva.Shape {
+    makeShape(index: number, char?: string): Konva.Shape {
         let shape: Konva.Shape
         shape = new Konva.Text({
             x: 10 + 64 * Math.floor(index % 4),
             y: 10 + 64 * Math.floor(index / 4),
-            // text: "\uf641",
-            text: CHARS[index],
+            text: char ? char : CHARS[index],
             fontFamily: "FontAwesome",
             fontSize: 32,
             width: 32,
@@ -207,19 +206,19 @@ function setupSidebar(canvas: Canvas) {
         sidebar.appendChild(icon)
     }
 
-    let icons = new Draggable(sidebar)
-
+    let draggable = new Draggable(sidebar)
     let x: number, y: number
-    icons.on('drag:move', (event) => {
+    draggable.on('drag:move', (event) => {
         x = event.data.sensorEvent.clientX
         y = event.data.sensorEvent.clientY
     })
-    icons.on('drag:stop', (event) => {
+    draggable.on('drag:stop', (event) => {
         if (
             MARGIN_X < x && x < MARGIN_X + SIZE &&
             MARGIN_Y < y && y < MARGIN_Y + SIZE
         ) {
-            let shape = canvas.makeShape(0)  // TODO
+            let char = event.data.source.innerText
+            let shape = canvas.makeShape(0, char)
             shape.setAttr('x', x - MARGIN_X)
             shape.setAttr('y', y - MARGIN_Y)
             canvas.layer.add(shape)
