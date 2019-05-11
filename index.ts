@@ -47,28 +47,11 @@ class Canvas {
         let stage = this.stage
         let layer = this.layer
 
-        let shapes: Konva.Shape[] = _.range(16).map((i) => this.makeShape(i))
+        this.insertDefaultIcons()
         await this.loadFontAwesome()
         // add the shape to the layer
-        shapes.map(shape => layer.add(shape))
-        shapes.map(shape => shape.on(
-            'click tap mouseup', e => {
-                this.removeTransformers()
-                this.createTransformer(shape)
-                layer.draw()
-            }
-        ))
-
         stage.add(layer);
 
-        for (let shape of shapes) {
-            shape.on('click tap mouseup', e => {
-                this.removeTransformers()
-                this.drawClones(shape)
-                this.createTransformer(shape)
-                layer.draw()
-            })
-        }
         stage.on('click tap', e => {
             // if click on empty area - remove all transformers
             if (e.target === stage) {
@@ -139,12 +122,17 @@ class Canvas {
         return { left, top, right, bottom, }
     }
 
-    makeShape(index: number, char?: string): Konva.Shape {
+    insertIcon(
+        char: string,
+        x: number,
+        y: number,
+        rotation?: number,
+    ) {
         let shape: Konva.Shape
         shape = new Konva.Text({
-            x: 10 + 64 * Math.floor(index % 4),
-            y: 10 + 64 * Math.floor(index / 4),
-            text: char ? char : CHARS[index],
+            x: x,
+            y: y,
+            text: char,
             fontFamily: "FontAwesome",
             fontSize: 32,
             width: 32,
@@ -153,10 +141,27 @@ class Canvas {
             fill: 'white',
             align: 'center',
             verticalAlign: 'center',
-            // stroke: 'red',
+            rotation: rotation ? rotation : 0,
         })
-        shape.id(String(Date.now() + index + Math.random()))
-        return shape
+        shape.id(String(Date.now() + Math.random()) + char)
+        shape.on(
+            'click tap mouseup', e => {
+                this.removeTransformers()
+                this.drawClones(shape)
+                this.createTransformer(shape)
+                this.layer.draw()
+            }
+        )
+        this.layer.add(shape)
+    }
+
+    insertDefaultIcons() {
+        _.range(16).map((index) => this.insertIcon(
+            CHARS[index],
+            10 + 64 * Math.floor(index % 4) + 4 * index,
+            10 + 64 * Math.floor(index / 4),
+            index * 10,
+        ))
     }
 
     findTransformers() {
@@ -218,10 +223,11 @@ function setupSidebar(canvas: Canvas) {
             MARGIN_Y < y && y < MARGIN_Y + SIZE
         ) {
             let char = event.data.source.innerText
-            let shape = canvas.makeShape(0, char)
-            shape.setAttr('x', x - MARGIN_X)
-            shape.setAttr('y', y - MARGIN_Y)
-            canvas.layer.add(shape)
+            canvas.insertIcon(
+                char,
+                x - MARGIN_X - 16,
+                y - MARGIN_Y - 16,
+            )
             canvas.layer.draw()
             canvas.refreshBackground()
         }
