@@ -14,6 +14,7 @@ class Canvas {
     stage: Konva.Stage
     layer: Konva.Layer
     clones: object
+    selected: Konva.Shape | null
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -27,6 +28,7 @@ class Canvas {
 
         this.layer = new Konva.Layer();
         this.clones = {}
+        this.selected = null
     }
 
     loadFontAwesome(): Promise<void> {
@@ -62,6 +64,11 @@ class Canvas {
         })
         stage.on('mouseup', e => {
             this.refreshBackground()
+        })
+        document.addEventListener('keydown', e => {
+            if (e.keyCode === 8 && this.selected) {
+                this.deleteIcon(this.selected)
+            }
         })
 
         // Hide layout at fist, so that the brower will not show those squares since font-awesome hasn't been loaded yet.
@@ -155,6 +162,14 @@ class Canvas {
         this.layer.add(shape)
     }
 
+    deleteIcon(shape: Konva.Shape) {
+        delete this.clones[shape.id()]
+        shape.destroy()
+        this.removeTransformers()
+        this.layer.draw()
+        this.refreshBackground()
+    }
+
     insertDefaultIcons() {
         _.range(16).map((index) => this.insertIcon(
             CHARS[index],
@@ -171,6 +186,7 @@ class Canvas {
 
     createTransformer(shape: Konva.Shape) {
         console.log('createTransformer shape:', shape)
+        this.selected = shape
 
         var t = new Konva.Transformer({
             centeredScaling: true,
@@ -185,6 +201,7 @@ class Canvas {
 
     removeTransformers() {
         console.log('removeTransformers')
+        this.selected = null
         this.findTransformers().destroy()
     }
 
